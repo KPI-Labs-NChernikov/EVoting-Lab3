@@ -24,21 +24,6 @@ public sealed class ModellingPrinter
             Console.WriteLine($"Voter {voter.FullName} has just registered. Their registration number: {voter.RegistrationNumber}.");
         });
 
-        //foreach (var voter in voters)
-        //{
-        //    var request = voter.PrepareRegistrationNumberRequest(registrationBureau.EncryptionPublicKey);
-        //    var registrationNumber = registrationBureau.RequestRegistrationNumber(request, voter.EncryptionPublicKey);
-
-        //    if (registrationNumber.IsFailed)
-        //    {
-        //        PrintError(registrationNumber);
-        //        continue;
-        //    }
-
-        //    voter.SetRegistrationNumber(registrationNumber.Value, registrationBureau.SignaturePublicKey);
-        //    Console.WriteLine($"Voter {voter.FullName} has just registered. Their registration number: {voter.RegistrationNumber}.");
-        //}
-
         Console.WriteLine();
     }
 
