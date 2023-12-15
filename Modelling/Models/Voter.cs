@@ -27,7 +27,7 @@ public sealed class Voter : BaseSecuredEntity
         Id = Guid.NewGuid();
     }
 
-    public byte[] PrepareRegistrationNumberQuery(AsymmetricKeyParameter registrationBureauEncryptionPublicKey)
+    public byte[] PrepareRegistrationNumberRequest(AsymmetricKeyParameter registrationBureauEncryptionPublicKey)
     {
         var signature = signatureProvider.Sign(transformer.Transform(FullName), signaturePrivateKey);
         var signedFullName = new SignedData<string>(FullName, signature);
@@ -39,7 +39,7 @@ public sealed class Voter : BaseSecuredEntity
         return Result.Ok()
             .Bind(() => Result.Try(()
                 => transformer.ReverseTransform<SignedData<Guid>>(encryptionProvider.Decrypt(encryptedRegistrationNumber, encryptionPrivateKey))
-                    ?? throw new InvalidOperationException("Value cannot be transformed to signed ballot."),
+                    ?? throw new InvalidOperationException("Value cannot be transformed to signed id."),
                 e => new Error("Message has wrong format or was incorrectly encrypted.").CausedBy(e)))
             .Bind(srn =>
             {
