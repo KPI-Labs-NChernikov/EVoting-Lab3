@@ -27,6 +27,13 @@ public sealed class Voter : BaseSecuredEntity
         Id = Guid.NewGuid();
     }
 
+    public byte[] PrepareRegistrationNumberQuery(AsymmetricKeyParameter registrationBureauEncryptionPublicKey)
+    {
+        var signature = signatureProvider.Sign(transformer.Transform(FullName), signaturePrivateKey);
+        var signedFullName = new SignedData<string>(FullName, signature);
+        return encryptionProvider.Encrypt(transformer.Transform(signedFullName), registrationBureauEncryptionPublicKey);
+    }
+
     public Result SetRegistrationNumber(byte[] encryptedRegistrationNumber, DSAParameters registrationBureauPublicKey)
     {
         return Result.Ok()
