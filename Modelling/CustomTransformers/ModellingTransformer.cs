@@ -8,10 +8,14 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
 {
     public bool CanTransform(Type type)
     {
-        return type == typeof(Ballot) || type == typeof(SignedData<Ballot>) || type == typeof(SignedData<Guid>) || type == typeof(Guid);
+        return type == typeof(Ballot) 
+            || type == typeof(SignedData<Ballot>) 
+            || type == typeof(SignedData<Guid>) 
+            || type == typeof(SignedData<string>) 
+            || type == typeof(Guid)
+            || type == typeof(string);
     }
 
-    private const int s_ballotSize = PublicConstants.GuidSize + PublicConstants.GuidSize + PublicConstants.IntSize;
     private readonly GuidTransformer _guidTransformer = new ();
 
     public T? ReverseTransform<T>(byte[] data)
@@ -28,21 +32,20 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
 
             return (T)(object)new Ballot(voterId, registrationId, candidateId);
         }
-        if (typeof(T) == typeof(SignedData<Ballot>))
+        if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(SignedData<>))
         {
-            var ballot = ReverseTransform<Ballot>(span[..s_ballotSize].ToArray());
-            var signature = span.Slice(s_ballotSize, PublicConstants.DSASignatureSize);
-            return (T)(object)new SignedData<Ballot>(ballot!, signature.ToArray());
-        }
-        if (typeof(T) == typeof(SignedData<Guid>))
-        {
-            var guid = ReverseTransform<Guid>(span[..PublicConstants.GuidSize].ToArray());
-            var signature = span.Slice(PublicConstants.GuidSize, PublicConstants.DSASignatureSize);
-            return (T)(object)new SignedData<Guid>(guid!, signature.ToArray());
+            var actualData = GetType().GetMethod(nameof(ReverseTransform))!.MakeGenericMethod(typeof(T).GenericTypeArguments[0])
+                .Invoke(this, new object[] { span.Slice(0, span.Length - PublicConstants.DSASignatureSize).ToArray() });
+            var signature = span.Slice(span.Length - PublicConstants.DSASignatureSize, PublicConstants.DSASignatureSize);
+            return (T)Activator.CreateInstance(typeof(T), actualData!, signature.ToArray())!;
         }
         if (typeof(T) == typeof(Guid))
         {
             return _guidTransformer.ReverseTransform<T>(data);
+        }
+        if(typeof(T) == typeof(string))
+        {
+            return (T)(object)PublicConstants.Encoding.GetString(data);
         }
 
         throw new NotSupportedException($"The type {typeof(T)} is not supported.");
@@ -59,25 +62,20 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
             stream.Write(BitConverter.GetBytes(ballot.CandidateId));
             return stream.ToArray();
         }
-        if (obj.GetType() == typeof(SignedData<Ballot>))
+        if (obj.GetType().IsGenericType && obj.GetType().GetGenericTypeDefinition() == typeof(SignedData<>))
         {
-            var signedBallot = (SignedData<Ballot>)obj;
             using var stream = new MemoryStream();
-            stream.Write(Transform(signedBallot.Data));
-            stream.Write(signedBallot.Signature);
-            return stream.ToArray();
-        }
-        if (obj.GetType() == typeof (SignedData<Guid>))
-        {
-            var signedId = (SignedData<Guid>)obj;
-            using var stream = new MemoryStream();
-            stream.Write(Transform(signedId.Data));
-            stream.Write(signedId.Signature);
+            stream.Write(Transform(obj.GetType().GetProperty("Data")!.GetValue(obj)!));
+            stream.Write((byte[])obj.GetType().GetProperty("Signature")!.GetValue(obj)!);
             return stream.ToArray();
         }
         if (obj.GetType() == typeof(Guid))
         {
             return _guidTransformer.Transform(obj);
+        }
+        if (obj.GetType() == typeof (string))
+        {
+            return PublicConstants.Encoding.GetBytes((string)obj);
         }
 
         throw new NotSupportedException($"The type {obj.GetType()} is not supported.");
