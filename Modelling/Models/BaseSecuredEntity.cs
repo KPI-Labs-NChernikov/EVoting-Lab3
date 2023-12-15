@@ -12,10 +12,12 @@ public abstract class BaseSecuredEntity
     public AsymmetricKeyParameter EncryptionPublicKey { get; }
     protected readonly AsymmetricKeyParameter encryptionPrivateKey;
 
-    protected ISignatureProvider<DSAParameters> signatureProvider;
-    protected IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider;
+    protected readonly ISignatureProvider<DSAParameters> signatureProvider;
+    protected readonly IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider;
 
-    public BaseSecuredEntity(Keys<DSAParameters> signatureKeys, Keys<AsymmetricKeyParameter> encryptionKeys, ISignatureProvider<DSAParameters> signatureProvider, IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider)
+    protected readonly IObjectToByteArrayTransformer transformer;
+
+    public BaseSecuredEntity(Keys<DSAParameters> signatureKeys, Keys<AsymmetricKeyParameter> encryptionKeys, ISignatureProvider<DSAParameters> signatureProvider, IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider, IObjectToByteArrayTransformer transformer)
     {
         SignaturePublicKey = signatureKeys.PublicKey;
         signaturePrivateKey = signatureKeys.PrivateKey;
@@ -25,5 +27,6 @@ public abstract class BaseSecuredEntity
 
         this.signatureProvider = signatureProvider;
         this.encryptionProvider = encryptionProvider;
+        this.transformer = transformer;
     }
 }
