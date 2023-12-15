@@ -1,32 +1,10 @@
-﻿using Algorithms.Abstractions;
-using FluentResults;
-using Modelling;
-using Modelling.Extensions;
+﻿using Modelling.Extensions;
 using Modelling.Models;
-using Org.BouncyCastle.Crypto;
-using System.Security.Cryptography;
 using static Demo.UtilityMethods;
 
 namespace Demo;
 public sealed class ModellingPrinter
 {
-    private readonly IEncryptionProvider<AsymmetricKeyParameter> _encryptionProvider;
-    private readonly IKeyGenerator<AsymmetricKeyParameter> _encryptionKeyGenerator;
-
-    private readonly ISignatureProvider<DSAParameters> _signatureProvider;
-    private readonly IKeyGenerator<DSAParameters> _signatureKeyGenerator;
-
-    private readonly IObjectToByteArrayTransformer _transformer;
-
-    public ModellingPrinter(IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider, IKeyGenerator<AsymmetricKeyParameter> encryptionKeyGenerator, ISignatureProvider<DSAParameters> signatureProvider, IKeyGenerator<DSAParameters> signatureKeyGenerator, IObjectToByteArrayTransformer transformer)
-    {
-        _encryptionProvider = encryptionProvider;
-        _encryptionKeyGenerator = encryptionKeyGenerator;
-        _signatureProvider = signatureProvider;
-        _signatureKeyGenerator = signatureKeyGenerator;
-        _transformer = transformer;
-    }
-
     public void PrintUsualRegistration(RegistrationBureau registrationBureau, IEnumerable<Voter> voters)
     {
         Console.WriteLine("Usual registration:");

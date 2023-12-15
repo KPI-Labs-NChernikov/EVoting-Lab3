@@ -22,7 +22,7 @@ var candidates = dataFactory.CreateCandidates();
 var voters = dataFactory.CreateVoters();
 var registrationBureau = dataFactory.CreateRegistrationBureau(voters);
 
-var printer = new ModellingPrinter(encryptionProvider, encryptionKeyGenerator, signatureProvider, signatureKeyGenerator, objectToByteArrayTransformer);
+var printer = new ModellingPrinter();
 
 printer.PrintUsualRegistration(registrationBureau, voters);
 printer.PrintDoubleRegistration(registrationBureau, randomProvider.NextItem(voters));
