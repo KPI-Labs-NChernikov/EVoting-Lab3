@@ -1,12 +1,31 @@
 ﻿using Algorithms.Abstractions;
 using Algorithms.Common;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
 
 namespace Algorithms.ElGamal;
 public sealed class ElGamalKeysGenerator : IKeyGenerator<AsymmetricKeyParameter>
 {
+    private const int _keySize = 1024;
+
     public Keys<AsymmetricKeyParameter> Generate()
     {
-        throw new NotImplementedException();
+        var parGen = new ElGamalParametersGenerator();
+
+        parGen.Init(_keySize, 10, new SecureRandom());
+        var elParams = parGen.GenerateParameters();
+
+        // Generate keypair
+        var pGen = new ElGamalKeyPairGenerator();
+
+
+        pGen.Init(new ElGamalKeyGenerationParameters(new SecureRandom(), elParams));
+
+
+        var pair = pGen.GenerateKeyPair();
+
+        return new Keys<AsymmetricKeyParameter>(pair.Public, pair.Private);
     }
 }
