@@ -48,7 +48,7 @@ public sealed class RegistrationBureau : BaseSecuredEntity
 
         if (!voterWasFound)
         {
-            return Result.Fail("Voter was not found");
+            return Result.Fail("Voter was not found.");
         }
 
         var voterHasRightToVote = voter.Item1.IsAbleToVote();
