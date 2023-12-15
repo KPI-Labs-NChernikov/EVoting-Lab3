@@ -8,9 +8,10 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
 {
     public bool CanTransform(Type type)
     {
-        return type == typeof(Ballot) || type == typeof(SignedData<>) || type == typeof(Guid);
+        return type == typeof(Ballot) || type == typeof(SignedData<Ballot>) || type == typeof(SignedData<Guid>) || type == typeof(Guid);
     }
 
+    private const int s_ballotSize = PublicConstants.GuidSize + PublicConstants.GuidSize + PublicConstants.IntSize;
     private readonly GuidTransformer _guidTransformer = new ();
 
     public T? ReverseTransform<T>(byte[] data)
@@ -27,11 +28,17 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
 
             return (T)(object)new Ballot(voterId, registrationId, candidateId);
         }
-        if (typeof(T) == typeof(SignedData<>))
+        if (typeof(T) == typeof(SignedData<Ballot>))
         {
-            var actualData = ReverseTransform<Ballot>(span.Slice(0, span.Length - PublicConstants.DSASignatureSize).ToArray());
-            var signature = span.Slice(span.Length - PublicConstants.DSASignatureSize, PublicConstants.DSASignatureSize);
-            return (T)Activator.CreateInstance(typeof(T), actualData, signature.ToArray())!;
+            var ballot = ReverseTransform<Ballot>(span[..s_ballotSize].ToArray());
+            var signature = span.Slice(s_ballotSize, PublicConstants.DSASignatureSize);
+            return (T)(object)new SignedData<Ballot>(ballot!, signature.ToArray());
+        }
+        if (typeof(T) == typeof(SignedData<Guid>))
+        {
+            var guid = ReverseTransform<Guid>(span[..PublicConstants.GuidSize].ToArray());
+            var signature = span.Slice(PublicConstants.GuidSize, PublicConstants.DSASignatureSize);
+            return (T)(object)new SignedData<Guid>(guid!, signature.ToArray());
         }
         if (typeof(T) == typeof(Guid))
         {
@@ -40,7 +47,7 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
 
         throw new NotSupportedException($"The type {typeof(T)} is not supported.");
     }
-    
+
     public byte[] Transform(object obj)
     {
         if (obj.GetType() == typeof(Ballot))
@@ -52,12 +59,20 @@ public sealed class ModellingTransformer : IObjectToByteArrayTransformer
             stream.Write(BitConverter.GetBytes(ballot.CandidateId));
             return stream.ToArray();
         }
-        if (obj.GetType() == typeof(SignedData<>))
+        if (obj.GetType() == typeof(SignedData<Ballot>))
         {
-            dynamic signedBallot = Convert.ChangeType(obj, GetType());
+            var signedBallot = (SignedData<Ballot>)obj;
             using var stream = new MemoryStream();
-            stream.Write(Transform(signedBallot.Ballot));
+            stream.Write(Transform(signedBallot.Data));
             stream.Write(signedBallot.Signature);
+            return stream.ToArray();
+        }
+        if (obj.GetType() == typeof (SignedData<Guid>))
+        {
+            var signedId = (SignedData<Guid>)obj;
+            using var stream = new MemoryStream();
+            stream.Write(Transform(signedId.Data));
+            stream.Write(signedId.Signature);
             return stream.ToArray();
         }
         if (obj.GetType() == typeof(Guid))
