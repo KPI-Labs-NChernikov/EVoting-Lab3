@@ -1,17 +1,35 @@
 ﻿using Algorithms.Abstractions;
 using System.Text.Json;
-using System.Text;
 
 namespace Algorithms.Common;
 public sealed class ObjectToByteArrayTransformer : IObjectToByteArrayTransformer
 {
+    public IList<IObjectToByteArrayTransformer> TypeTransformers { get; } = new List<IObjectToByteArrayTransformer>();
+
     public byte[] Transform(object obj)
     {
-        return Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj));
+        var transformer = TypeTransformers.FirstOrDefault(t => t.CanTransform(obj.GetType()));
+        if (transformer is not null)
+        {
+            return transformer!.Transform(obj);
+        }
+
+        return PublicConstants.Encoding.GetBytes(JsonSerializer.Serialize(obj));
     }
 
     public T? ReverseTransform<T>(byte[] data)
     {
-        return JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(data));
+        var transformer = TypeTransformers.FirstOrDefault(t => t.CanTransform(typeof(T)));
+        if (transformer is not null)
+        {
+            return transformer!.ReverseTransform<T>(data);
+        }
+
+        return JsonSerializer.Deserialize<T>(PublicConstants.Encoding.GetString(data));
+    }
+
+    public bool CanTransform(Type type)
+    {
+        return true;
     }
 }
