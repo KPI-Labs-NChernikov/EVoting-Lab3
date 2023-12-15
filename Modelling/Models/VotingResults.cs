@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Modelling.Models;
-internal class VotingResults
+﻿namespace Modelling.Models;
+public sealed class VotingResults
 {
+    public SortedDictionary<int, CandidateResult> CandidatesResults { get; } = [];
+
+    public ICollection<VoterResult> VotersResults { get; } = new List<VoterResult>();
 }

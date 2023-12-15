@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Modelling.Models;
-internal class CandidateResult
+﻿namespace Modelling.Models;
+public sealed class CandidateResult
 {
+    public Candidate Candidate { get; }
+
+    public int Votes { get; set; }
+
+    public CandidateResult(Candidate candidate)
+    {
+        Candidate = candidate;
+    }
 }
