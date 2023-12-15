@@ -2,6 +2,7 @@
 using Algorithms.Common;
 using FluentResults;
 using Org.BouncyCastle.Crypto;
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
 namespace Modelling.Models;
@@ -9,7 +10,7 @@ public sealed class RegistrationBureau : BaseSecuredEntity
 {
     public bool IsRegistrationClosed { get; private set; }
 
-    private readonly Dictionary<string, (Voter, Guid)> _voters = [];
+    private readonly ConcurrentDictionary<string, (Voter, Guid)> _voters = [];
 
     public RegistrationBureau(IEnumerable<Voter> voters, Keys<DSAParameters> signatureKeys, Keys<AsymmetricKeyParameter> encryptionKeys, ISignatureProvider<DSAParameters> signatureProvider, IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider, IObjectToByteArrayTransformer transformer)
         : base(signatureKeys, encryptionKeys, signatureProvider, encryptionProvider, transformer)

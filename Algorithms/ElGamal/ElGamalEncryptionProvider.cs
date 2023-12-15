@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 
 namespace Algorithms.ElGamal;
-public sealed class EnGamalEncryptionProvider : IEncryptionProvider<AsymmetricKeyParameter>
+public sealed class ElGamalEncryptionProvider : IEncryptionProvider<AsymmetricKeyParameter>
 {
     public byte[] Decrypt(byte[] data, AsymmetricKeyParameter privateKey)
     {

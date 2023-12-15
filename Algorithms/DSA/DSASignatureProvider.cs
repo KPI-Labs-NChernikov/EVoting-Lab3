@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 
 namespace Algorithms.DSA;
-internal class DSASignatureProvider : ISignatureProvider<DSAParameters>
+public sealed class DSASignatureProvider : ISignatureProvider<DSAParameters>
 {
     private readonly HashAlgorithmName _hashAlgorithmName = HashAlgorithmName.SHA256;
 

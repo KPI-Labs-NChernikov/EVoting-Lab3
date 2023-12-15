@@ -18,13 +18,11 @@ public sealed class ElGamalKeysGenerator : IKeyGenerator<AsymmetricKeyParameter>
         var elParams = parGen.GenerateParameters();
 
         // Generate keypair
-        var pGen = new ElGamalKeyPairGenerator();
+        var _pGen = new ElGamalKeyPairGenerator();
 
+        _pGen.Init(new ElGamalKeyGenerationParameters(new SecureRandom(), elParams));
 
-        pGen.Init(new ElGamalKeyGenerationParameters(new SecureRandom(), elParams));
-
-
-        var pair = pGen.GenerateKeyPair();
+        var pair = _pGen.GenerateKeyPair();
 
         return new Keys<AsymmetricKeyParameter>(pair.Public, pair.Private);
     }
