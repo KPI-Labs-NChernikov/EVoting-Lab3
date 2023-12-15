@@ -58,6 +58,14 @@ public sealed class Voter : BaseSecuredEntity
             });
     }
 
+    public byte[] PrepareBallot(int candidateId, AsymmetricKeyParameter electionCommissionEncryptionPublicKey)
+    {
+        var ballot = new Ballot(Id, RegistrationNumber, candidateId);
+        var signature = signatureProvider.Sign(transformer.Transform(ballot), signaturePrivateKey);
+        var signedFullName = new SignedData<Ballot>(ballot, signature);
+        return encryptionProvider.Encrypt(transformer.Transform(signedFullName), electionCommissionEncryptionPublicKey);
+    }
+
     public Result IsAbleToVote()
     {
         if (!IsCapable)
