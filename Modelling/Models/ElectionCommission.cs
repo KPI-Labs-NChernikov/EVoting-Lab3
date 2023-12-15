@@ -8,9 +8,23 @@ public sealed class ElectionCommission : BaseSecuredEntity
 {
     private readonly Dictionary<Guid, DSAParameters> _voters;
 
-    public ElectionCommission(Dictionary<Guid, DSAParameters> voters, Keys<DSAParameters> signatureKeys, Keys<AsymmetricKeyParameter> encryptionKeys, ISignatureProvider<DSAParameters> signatureProvider, IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider, IObjectToByteArrayTransformer transformer)
+    public VotingResults VotingResults { get; } = new();
+
+    public bool IsVotingCompleted { get; private set; }
+
+    public ElectionCommission(IEnumerable<Candidate> candidates, Dictionary<Guid, DSAParameters> voters, Keys<DSAParameters> signatureKeys, Keys<AsymmetricKeyParameter> encryptionKeys, ISignatureProvider<DSAParameters> signatureProvider, IEncryptionProvider<AsymmetricKeyParameter> encryptionProvider, IObjectToByteArrayTransformer transformer)
         : base(signatureKeys, encryptionKeys, signatureProvider, encryptionProvider, transformer)
     {
+        foreach (var candidate in candidates)
+        {
+            VotingResults.CandidatesResults.Add(candidate.Id, new(candidate));
+        }
+
         _voters = voters;
+    }
+
+    public void CompleteVoting()
+    {
+        IsVotingCompleted = true;
     }
 }
